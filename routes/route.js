@@ -13,8 +13,10 @@ let transporter = nodemailer.createTransport({
 
 route.get("/", isAuth ,(req,res)=>{
     const data1 = req.cookies.auth;
-    var s = jwt.verify(data1 , 'secret')
-    return res.render("home" , {data:s.user});
+    var {user} = jwt.verify(data1 , 'secret')
+    user.ApiKey = 'dfdhfvdhf';
+    user.save();
+    return res.render("home" , {data:user});
 })
 
 route.get("/login",(req,res)=>{
@@ -52,13 +54,13 @@ route.post("/register",async(req,res)=>{
                 to: email, // list of receivers
                 subject: "Hello ✔", // Subject line
                 text: "Hello world? Click on Link to verify", // plain text body
-                html: `"http://localhost:3100/verify/+${token}"` // html body
+                html: `"http://localhost:3100/verify/${token}"` // html body
             },(err,info)=>{
                 if(err){
                     console.error(err);
                 }
                 res.cookie('verify',token);
-                return res.redirect("/verify")
+                return res.redirect("/message")
             });
         }else{
             res.redirect("/login")
@@ -66,9 +68,10 @@ route.post("/register",async(req,res)=>{
     })
 })
 
-route.get("/verify", isinVerify ,(req,res)=>{
-    res.render("verify")
+route.get("/message",(req,res)=>{
+    res.render("message")
 })
+
 
 route.get("/verify/:url", isinVerify ,(req,res)=>{
     jwt.verify(req.params.url , 'verify',(err,data)=>{
@@ -76,6 +79,7 @@ route.get("/verify/:url", isinVerify ,(req,res)=>{
             return res.json(err);
         }
         res.clearCookie("verify");
+        return res.redirect("/login")
     })
 
 })
