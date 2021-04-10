@@ -7,9 +7,10 @@
     <title>Document</title>
 </head>
 <body>
-    Hiii
-    generate api Key for your organization / Self
-    <h1>Your Name : <%= data.uname%></h1>
-    <h2>Your </h2>
+    <form action="/verify" method="post">
+        <label for="veri">OTP</label>
+        <input type="number" name="veri" id="veri">
+        <button type="submit">Submit</button>
+    </form>
 </body>
 </html>

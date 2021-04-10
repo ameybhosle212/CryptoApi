@@ -12,6 +12,15 @@ const UserSchema = new mongoose.Schema({
     password:{
         type:String,
         required:true
+    },
+    ApiKey:{
+        type:String
+    },
+    AccessedTimes:{
+        type:Number
+    },
+    AccessTime:{
+        type:String
     }
 })
 
