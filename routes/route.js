@@ -13,10 +13,25 @@ let transporter = nodemailer.createTransport({
 
 route.get("/", isAuth ,(req,res)=>{
     const data1 = req.cookies.auth;
-    var {user} = jwt.verify(data1 , 'secret')
-    user.ApiKey = 'dfdhfvdhf';
-    user.save();
-    return res.render("home" , {data:user});
+    var use1 = jwt.verify(data1 , 'secret')
+    var uname1  = use1.user.uname;
+    console.log(uname1);
+    var token = jwt.sign(uname1 , 'api');
+    console.log(token);
+    User.findOne({uname:uname1} , function(err , user){
+        // if(err) throw err;
+        user.ApiKey = token;
+        user.save();
+        var short = token.split('.')[2];
+        var data = {
+            "uname":user.uname,
+            "email":user.email,
+            "apikey":short,
+            "AccessedTimes":AccessedTimes
+        };
+        return res.render("home",{data:data})
+    })
+    // return res.render("home");
 })
 
 route.get("/login",(req,res)=>{
@@ -38,7 +53,7 @@ route.post("/login", async (req,res)=>{
     })
 })
 
-route.get("/register",(req,res)=>{
+route.get("/register",isNothAuth,(req,res)=>{
     res.render("register")
 })
 
@@ -101,6 +116,18 @@ function isAuth(req,res,next) {
         // }
         next();
     })
+}
+
+function isNothAuth(req,res,next) {
+    const check = req.cookies.auth;
+    // var s = jwt.verify(check, 'secret');
+    // console.log(s);
+    if(!check){
+        next()
+    }
+    else{
+        return res.redirect("/home")
+    }
 }
 
 function isinVerify(req,res,next) {

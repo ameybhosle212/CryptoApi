@@ -17,7 +17,8 @@ const UserSchema = new mongoose.Schema({
         type:String
     },
     AccessedTimes:{
-        type:Number
+        type:Number,
+        default: 0
     },
     AccessTime:{
         type:String
