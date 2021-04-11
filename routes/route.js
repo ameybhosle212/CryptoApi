@@ -14,24 +14,7 @@ let transporter = nodemailer.createTransport({
 route.get("/", isAuth ,(req,res)=>{
     const data1 = req.cookies.auth;
     var use1 = jwt.verify(data1 , 'secret')
-    var uname1  = use1.user.uname;
-    console.log(uname1);
-    var token = jwt.sign(uname1 , 'api');
-    console.log(token);
-    User.findOne({uname:uname1} , function(err , user){
-        // if(err) throw err;
-        user.ApiKey = token;
-        user.save();
-        var short = token.split('.')[2];
-        var data = {
-            "uname":user.uname,
-            "email":user.email,
-            "apikey":short,
-            "AccessedTimes":AccessedTimes
-        };
-        return res.render("home",{data:data})
-    })
-    // return res.render("home");
+    return res.render("home",{data:use1});
 })
 
 route.get("/login",(req,res)=>{
@@ -93,10 +76,15 @@ route.get("/verify/:url", isinVerify ,(req,res)=>{
         if(err){
             return res.json(err);
         }
-        res.clearCookie("verify");
-        return res.redirect("/login")
+        console.log(data);
+        User.findOne({email:data.user.email},function(err,user){
+            const token = jwt.sign(user.uname , 'api');
+            user.ApiKey = token;
+            user.save();
+            res.clearCookie("verify");
+            return res.redirect("/login")
+        })
     })
-
 })
 
 route.get("/logout",(req,res)=>{

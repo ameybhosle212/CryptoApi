@@ -3,7 +3,7 @@ const mongoose  = require('mongoose')
 const app = express()
 const cookieParser = require('cookie-parser')
 
-mongoose.connect('mongodb://localhost/sttase', {useNewUrlParser: true, useUnifiedTopology: true}).then(()=>{
+mongoose.connect('mongodb://localhost/sttddd', {useNewUrlParser: true, useUnifiedTopology: true}).then(()=>{
     console.log("DB CONNECTED")
 })
 
