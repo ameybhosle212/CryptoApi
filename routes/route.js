@@ -97,18 +97,20 @@ route.get("/verify/:url", isinVerify ,(req,res)=>{
 route.get("/api/:apikey/crypto" , isAuth , (req,res)=>{
     var apikey = req.params.apikey;
     var dr = jwt.verify(req.cookies.auth , 'secret');
-    var data = User.findOne({email:dr.email})
-    var s = data.ApiKey.split('.')[2]
-    data.AccessedTimes = data.AccessedTimes + 1 ;
-    if( s == apikey ){
-        data.save();
-        Crypto.findOne({}, {}, { sort: { 'created_at' : -1 } }, function(err,data) {
-            console.log( data );
-            return res.json(data);
-        });
-    }else{
-        return res.statusCode(404).json({"Data":"Invalid API KEY"});
-    }
+    console.log(dr);
+    User.findOne({email:dr.user.email} , function (err , user) {
+        // data.AccessedTimes = data.AccessedTimes + 1 ;
+        console.log(user);
+        var getApiKey = user.ApiKey.split('.')[2]
+        if(getApiKey == apikey){
+            user.AccessedTimes = user.AccessedTimes + 1 ;
+            user.save();
+            return res.json("true");
+        }
+        else{
+            return res.json({"Data":"Invalid API KEY"});
+        }  
+    })
 })
 
 route.get("/documnetation" , isAuth , (req,res)=>{
