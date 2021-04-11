@@ -2,6 +2,8 @@ const route = require('express').Router();
 const User = require('../model/user')
 const Crypto = require('../model/crypto')
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+const saltRounds = 10;
 const nodemailer = require("nodemailer");
 let transporter = nodemailer.createTransport({
     service: "gmail",
@@ -85,9 +87,12 @@ route.get("/verify/:url", isinVerify ,(req,res)=>{
         }
         console.log(data);
         User.findOne({email:data.user.email},function(err,user){
-            const token = jwt.sign(user.uname , 'api');
-            user.ApiKey = token;
-            user.save();
+            bcrypt.genSalt(saltRounds, function(err, salt) {
+                bcrypt.hash(user.password , salt, function(err, hash) {
+                    user.ApiKey = hash;     
+                    user.save();
+                });
+            });
             res.clearCookie("verify");
             return res.redirect("/login")
         })
