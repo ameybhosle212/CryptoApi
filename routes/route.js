@@ -14,7 +14,14 @@ let transporter = nodemailer.createTransport({
 route.get("/", isAuth ,(req,res)=>{
     const data1 = req.cookies.auth;
     var use1 = jwt.verify(data1 , 'secret')
-    return res.render("home",{data:use1.user});
+    var api  = use1.user.ApiKey.split('.')[2]
+    var data = {
+        "uname":use1.user.uname,
+        "email":use1.user.email,
+        "AccessedTime":use1.user.AccessedTimes,
+        "Apikey":api
+    }
+    return res.render("home",{data:data});
 })
 
 route.get("/login",(req,res)=>{
@@ -85,6 +92,27 @@ route.get("/verify/:url", isinVerify ,(req,res)=>{
             return res.redirect("/login")
         })
     })
+})
+
+route.get("/api/:apikey/crypto" , isAuth , (req,res)=>{
+    var apikey = req.params.apikey;
+    var dr = jwt.verify(req.cookies.auth , 'secret');
+    var data = User.findOne({email:dr.email})
+    var s = data.ApiKey.split('.')[2]
+    data.AccessedTimes = data.AccessedTimes + 1 ;
+    if( s == apikey ){
+        data.save();
+        Crypto.findOne({}, {}, { sort: { 'created_at' : -1 } }, function(err,data) {
+            console.log( data );
+            return res.json(data);
+        });
+    }else{
+        return res.statusCode(404).json({"Data":"Invalid API KEY"});
+    }
+})
+
+route.get("/documnetation" , isAuth , (req,res)=>{
+    res.render("documnetation")
 })
 
 route.get("/logout",(req,res)=>{
