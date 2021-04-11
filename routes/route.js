@@ -14,7 +14,7 @@ let transporter = nodemailer.createTransport({
 route.get("/", isAuth ,(req,res)=>{
     const data1 = req.cookies.auth;
     var use1 = jwt.verify(data1 , 'secret')
-    return res.render("home",{data:use1});
+    return res.render("home",{data:use1.user});
 })
 
 route.get("/login",(req,res)=>{
