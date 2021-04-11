@@ -99,22 +99,18 @@ route.get("/verify/:url", isinVerify ,(req,res)=>{
     })
 })
 
-route.get("/api/:apikey/crypto" , isAuth , (req,res)=>{
+route.get("/api/:apikey/crypto" ,(req,res)=>{
     var apikey = req.params.apikey;
-    var dr = jwt.verify(req.cookies.auth , 'secret');
-    console.log(dr);
-    User.findOne({email:dr.user.email} , function (err , user) {
-        // data.AccessedTimes = data.AccessedTimes + 1 ;
-        console.log(user);
-        var getApiKey = user.ApiKey.split('.')[2]
-        if(getApiKey == apikey){
-            user.AccessedTimes = user.AccessedTimes + 1 ;
-            user.save();
-            return res.json("true");
+    User.findOne({ApiKey:apikey},function(err , data){
+        if(err){
+            console.error(err);
         }
-        else{
-            return res.json({"Data":"Invalid API KEY"});
-        }  
+        if(data){
+            data.AccessedTimes = data.AccessedTimes + 1 ;
+            data.save();
+            return res.json("VALID")
+        }
+        return res.json("INVALID API ")
     })
 })
 
