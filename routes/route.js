@@ -3,6 +3,7 @@ const User = require('../model/user')
 const Crypto = require('../model/crypto')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const {spawn} = require('child_process')
 const saltRounds = 10;
 const nodemailer = require("nodemailer");
 let transporter = nodemailer.createTransport({
@@ -16,14 +17,7 @@ let transporter = nodemailer.createTransport({
 route.get("/", isAuth ,(req,res)=>{
     const data1 = req.cookies.auth;
     var use1 = jwt.verify(data1 , 'secret')
-    var api  = use1.user.ApiKey.split('.')[2]
-    var data = {
-        "uname":use1.user.uname,
-        "email":use1.user.email,
-        "AccessedTime":use1.user.AccessedTimes,
-        "Apikey":api
-    }
-    return res.render("home",{data:data});
+    return res.render("home",{data:use1.user});
 })
 
 route.get("/login",(req,res)=>{
@@ -108,7 +102,23 @@ route.get("/api/:apikey/crypto" ,(req,res)=>{
         if(data){
             data.AccessedTimes = data.AccessedTimes + 1 ;
             data.save();
-            return res.json("VALID")
+            var dataToSend;
+            // spawn new child process to call the python script
+            const python = spawn('python', ['./test.py']);
+            // collect data from script
+            python.stdout.on('data', function (data) {
+            console.log('Pipe data from python script ...');
+            console.log(data);
+            dataToSend = data.toString();
+            });
+            // in close event we are sure that stream from child process is closed
+            python.on('close', (code) => {
+            console.log(`child process close all stdio with code ${code}`);
+            console.log(dataToSend);
+            // send data to browser
+            return res.json(dataToSend);
+            });
+            
         }
         return res.json("INVALID API ")
     })
