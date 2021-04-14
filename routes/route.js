@@ -102,23 +102,9 @@ route.get("/api/:apikey/crypto" ,(req,res)=>{
         if(data){
             data.AccessedTimes = data.AccessedTimes + 1 ;
             data.save();
-            var dataToSend;
-            // spawn new child process to call the python script
-            const python = spawn('python', ['./test.py']);
-            // collect data from script
-            python.stdout.on('data', function (data) {
-            console.log('Pipe data from python script ...');
-            console.log(data);
-            dataToSend = data.toString();
+            Crypto.find({} , function(err, post) {
+                return res.json(post);
             });
-            // in close event we are sure that stream from child process is closed
-            python.on('close', (code) => {
-            console.log(`child process close all stdio with code ${code}`);
-            console.log(dataToSend);
-            // send data to browser
-            return res.json(dataToSend);
-            });
-            
         }
         return res.json("INVALID API ")
     })
