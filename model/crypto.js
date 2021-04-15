@@ -15,4 +15,6 @@ const CptSchema = new mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model('crypto' , CptSchema);
+const crypto = mongoose.model('crypto' , CptSchema);
+
+module.exports = crypto;

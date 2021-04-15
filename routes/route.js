@@ -3,8 +3,13 @@ const User = require('../model/user')
 const Crypto = require('../model/crypto')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
-const {spawn} = require('child_process')
-const saltRounds = 10;
+var PythonShell = require('python-shell').PythonShell;
+var options = {
+    mode: 'text',
+    scriptPath: 'C:/Users/ameyb/Desktop/api_today/routes'
+};
+
+const saltRounds = 15;
 const nodemailer = require("nodemailer");
 let transporter = nodemailer.createTransport({
     service: "gmail",
@@ -17,7 +22,13 @@ let transporter = nodemailer.createTransport({
 route.get("/", isAuth ,(req,res)=>{
     const data1 = req.cookies.auth;
     var use1 = jwt.verify(data1 , 'secret')
-    return res.render("home",{data:use1.user});
+    var Key = use1.user.ApiKey;
+    var ShortKey = Key.slice(1,Key.length);
+    var data = {
+        "uname":use1.user.uname,
+        "ApiKey":ShortKey
+    }
+    return res.render("home",{data:data});
 })
 
 route.get("/login",(req,res)=>{
@@ -33,19 +44,20 @@ route.post("/login", async (req,res)=>{
                 res.cookie('auth' , token);
                 return res.redirect("/")
             }
-            return res.json("false")
+            return res.redirect("/login")
         }
         return res.redirect("/register")
     })
 })
 
-route.get("/register",isNothAuth,(req,res)=>{
+route.get("/register",(req,res)=>{
     res.render("register")
 })
 
 route.post("/register",async(req,res)=>{
     const {uname , email , pass} = req.body;
-    await User.findOne({email:email}).then(user =>{
+    console.log(email);
+    await User.findOne({email:req.body.email}).then(user =>{
         if(!user){
             var newUser = User({uname:uname,email:email,password:pass})
             newUser.save();
@@ -55,7 +67,7 @@ route.post("/register",async(req,res)=>{
                 to: email, // list of receivers
                 subject: "Hello ✔", // Subject line
                 text: "Hello world? Click on Link to verify", // plain text body
-                html: `"http://localhost:3100/verify/${token}"` // html body
+                html: `"http://localhost:4000/verify/${token}"` // html body
             },(err,info)=>{
                 if(err){
                     console.error(err);
@@ -83,6 +95,7 @@ route.get("/verify/:url", isinVerify ,(req,res)=>{
         User.findOne({email:data.user.email},function(err,user){
             bcrypt.genSalt(saltRounds, function(err, salt) {
                 bcrypt.hash(user.password , salt, function(err, hash) {
+                    user.vaild = true;
                     user.ApiKey = hash;     
                     user.save();
                 });
@@ -94,17 +107,22 @@ route.get("/verify/:url", isinVerify ,(req,res)=>{
 })
 
 route.get("/api/:apikey/crypto" ,(req,res)=>{
-    var apikey = req.params.apikey;
+    var apikey = "$" + req.params.apikey;
+    console.log(apikey);
     User.findOne({ApiKey:apikey},function(err , data){
         if(err){
             console.error(err);
         }
         if(data){
-            data.AccessedTimes = data.AccessedTimes + 1 ;
-            data.save();
-            Crypto.find({} , function(err, post) {
-                return res.json(post);
-            });
+            PythonShell.run('test.py', options, function (err, results) {
+                if (err) throw err;
+                data.AccessedTimes = data.AccessedTimes + 1 ;
+                data.save();
+                Crypto.find({} , function(err, post) {
+                    if (err) return res.json(err);
+                    return res.json(post);
+                });
+            });            
         }
         return res.json("INVALID API ")
     })
@@ -135,13 +153,14 @@ function isAuth(req,res,next) {
 
 function isNothAuth(req,res,next) {
     const check = req.cookies.auth;
-    // var s = jwt.verify(check, 'secret');
-    // console.log(s);
-    if(!check){
+    var s = jwt.verify(check, 'secret');
+    console.log(s);
+    // console.log(check);
+    if(check != null){
         next()
     }
     else{
-        return res.redirect("/home")
+        return res.redirect("/")
     }
 }
 

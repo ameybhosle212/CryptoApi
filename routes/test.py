@@ -6,7 +6,7 @@ from datetime import date
 
 client = MongoClient("mongodb://localhost:27017")
 
-db = client.stta
+db = client.starstruck
 Crypto = db.crypto
 headers={'user-agent': ('Mozilla/5.0 (X11; Linux x86_64)'
                         'AppleWebKit/537.36 (KHTML, like Gecko)'
@@ -23,9 +23,8 @@ for i in range(0,len(data)-2):
     today = date.today()
     Add = {
         "name":name_of_coin,
-        "Time":today,
+        "Time":"today",
         "Value":dval
     }
     Crypto.insert_one(Add)
-
 client.close()
