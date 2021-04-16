@@ -2,7 +2,7 @@ const express = require('express')
 const mongoose  = require('mongoose')
 const app = express()
 const cookieParser = require('cookie-parser')
-const uri = "mongodb+srv://starstruck:22334@cluster0.hd8jn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+const uri = "mongodb+srv://<username>:<password>@cluster0.hd8jn.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 mongoose.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true}).then(()=>{
     console.log("DB CONNECTED")
 })

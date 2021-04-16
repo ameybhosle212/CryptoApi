@@ -14,8 +14,8 @@ const nodemailer = require("nodemailer");
 let transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "ameybhosle212@gmail.com", // generated ethereal user
-      pass: "22334AMEY", // generated ethereal password
+      user: "@gmail.com", // generated ethereal user
+      pass: "", // generated ethereal password
     },
 });
 
