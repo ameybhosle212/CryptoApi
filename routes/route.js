@@ -1,6 +1,6 @@
 const route = require('express').Router();
 const User = require('../model/user')
-const Crypto = require('../model/crypto')
+const crypto = require('../model/crypto')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 var PythonShell = require('python-shell').PythonShell;
@@ -67,7 +67,7 @@ route.post("/register",async(req,res)=>{
                 to: email, // list of receivers
                 subject: "Hello ✔", // Subject line
                 text: "Hello world? Click on Link to verify", // plain text body
-                html: `"http://localhost:4000/verify/${token}"` // html body
+                html: `"http://localhost:3100/verify/${token}"` // html body
             },(err,info)=>{
                 if(err){
                     console.error(err);
@@ -100,31 +100,40 @@ route.get("/verify/:url", isinVerify ,(req,res)=>{
                     user.save();
                 });
             });
+            console.log(user);
             res.clearCookie("verify");
             return res.redirect("/login")
         })
     })
 })
 
-route.get("/api/:apikey/crypto" ,(req,res)=>{
+route.get("/api/:apikey/crypto" ,async(req,res)=>{
     var apikey = "$" + req.params.apikey;
     console.log(apikey);
-    User.findOne({ApiKey:apikey},function(err , data){
+    await User.findOne({ApiKey:apikey},function(err , data){
         if(err){
             console.error(err);
         }
+        console.log(data);
         if(data){
             PythonShell.run('test.py', options, function (err, results) {
-                if (err) throw err;
+                if (err) {
+                    console.log(err);
+                    res.sendStatus(500);
+                    return;
+                }
                 data.AccessedTimes = data.AccessedTimes + 1 ;
                 data.save();
-                Crypto.find({} , function(err, post) {
-                    if (err) return res.json(err);
-                    return res.json(post);
+                crypto.find({} , function(err, post) {
+                    // if (err) return res.json(err);
+                    console.log(post);
+                    return res.status(200).json(post);
                 });
             });            
         }
-        return res.json("INVALID API ")
+        else{
+            return res.json("INVALID API ")
+        }
     })
 })
 
